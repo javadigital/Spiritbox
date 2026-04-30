@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Phantom-AI | Native Mobile Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap');
+
+        :root {
+            --neon-cyan: #06b6d4;
+            --horror-red: #f43f5e;
+            --deep-dark: #020617;
+            --panel-bg: rgba(15, 23, 42, 0.8);
+        }
+
+        body {
+            background-color: var(--deep-dark);
+            color: #f8fafc;
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Tekstur Karbon & Rugged */
+        .carbon-bg {
+            background-image: linear-gradient(45deg, #0f172a 25%, transparent 25%), 
+                              linear-gradient(-45deg, #0f172a 25%, transparent 25%), 
+                              linear-gradient(45deg, transparent 75%, #0f172a 75%), 
+                              linear-gradient(-45deg, transparent 75%, #0f172a 75%);
+            background-size: 4px 4px;
+            background-color: #020617;
+        }
+
+        .glass-module {
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Animasi Glitch Pro */
+        @keyframes pro-glitch {
+            0% { clip-path: inset(40% 0 61% 0); transform: translate(-5px); }
+            20% { clip-path: inset(92% 0 1% 0); transform: translate(5px); }
+            40% { clip-path: inset(43% 0 1% 0); transform: translate(-5px); }
+            60% { clip-path: inset(25% 0 58% 0); transform: translate(5px); }
+            80% { clip-path: inset(54% 0 7% 0); transform: translate(-5px); }
+            100% { clip-path: inset(58% 0 43% 0); transform: translate(5px); }
+        }
+        .glitch-effect { animation: pro-glitch 0.2s infinite linear alternate-reverse; }
+
+        /* Scanner Radar Anim */
+        @keyframes scan-rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .radar-line {
+            width: 100%; height: 100%;
+            background: conic-gradient(from 0deg, transparent 0deg, rgba(6, 182, 212, 0.2) 360deg);
+            border-radius: 50%;
+            animation: scan-rotate 4s linear infinite;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            background: #1e293b;
+            height: 4px;
+            border-radius: 99px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px; height: 24px;
+            background: var(--neon-cyan);
+            border-radius: 50%;
+            border: 4px solid #020617;
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .digital-mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Splash Screen */
+        #splash-screen {
+            background: var(--deep-dark);
+            z-index: 999;
+            transition: opacity 0.8s ease-out;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col p-0 m-0 carbon-bg">
+
+    <!-- SPLASH SCREEN / INITIATOR -->
+    <div id="splash-screen" class="fixed inset-0 flex flex-col items-center justify-center p-8">
+        <div class="mb-6 relative">
+            <div class="w-24 h-24 border-4 border-cyan-500/20 rounded-full animate-ping"></div>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+            </div>
+        </div>
+        <h1 class="text-2xl font-bold tracking-[0.4em] uppercase text-white mb-2">Phantom-AI</h1>
+        <p class="text-cyan-500/50 text-[10px] tracking-widest uppercase mb-12">Spectral Investigative OS v4.0</p>
+        <button id="init-btn" class="px-8 py-4 bg-cyan-600 rounded-2xl text-white font-bold tracking-widest uppercase shadow-[0_0_20px_rgba(6,182,212,0.4)] active:scale-95 transition-all">
+            Initiate System
+        </button>
+    </div>
+
+    <!-- STATUS BAR (NATIVE LOOK) -->
+    <header class="pt-4 px-6 flex justify-between items-center opacity-60">
+        <div class="text-[10px] font-bold tracking-tighter uppercase">
+            Unit: SB-ELITE-PRO <span class="mx-1">|</span> <span id="clock">00:00:00</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="w-1.5 h-1.5 rounded-full bg-slate-600" id="status-led"></div>
+            <span class="text-[10px] font-bold uppercase tracking-widest" id="status-txt">Offline</span>
+        </div>
+    </header>
+
+    <!-- MAIN MONITOR -->
+    <main class="flex-1 flex flex-col px-4 py-4 gap-4 overflow-hidden">
+        
+        <!-- SENSOR HUB -->
+        <div class="grid grid-cols-2 gap-3">
+            <div class="glass-module rounded-2xl p-4 relative overflow-hidden">
+                <div class="text-[9px] uppercase font-bold text-slate-500 mb-1">Scanning Resonance</div>
+                <div class="flex items-baseline gap-1">
+                    <span id="freq-num" class="text-4xl font-bold text-slate-800 digital-mono transition-colors">00.0</span>
+                    <span class="text-[10px] text-slate-600">Hz</span>
+                </div>
+                <div class="absolute top-0 right-0 p-2 opacity-10">
+                    <svg class="h-8 w-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                </div>
+            </div>
+            <div class="glass-module rounded-2xl p-4">
+                <div class="text-[9px] uppercase font-bold text-slate-500 mb-1">EMF Intensity</div>
+                <div class="flex items-baseline gap-1">
+                    <span id="emf-num" class="text-4xl font-bold text-slate-800 digital-mono transition-colors">0.0</span>
+                    <span class="text-[10px] text-slate-600">mG</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- RADAR & DECRYPTION -->
+        <div class="flex-1 glass-module rounded-[2rem] p-6 flex flex-col items-center justify-between relative overflow-hidden">
+            <div id="radar-container" class="w-full h-full absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
+                <div class="w-64 h-64 border border-cyan-500/20 rounded-full relative">
+                    <div class="radar-line"></div>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="w-32 h-32 border border-cyan-500/10 rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI STATUS TAG -->
+            <div id="ai-tag" class="bg-black/50 px-3 py-1 rounded-full border border-slate-800 text-[8px] font-bold uppercase tracking-[0.3em] text-slate-600 mb-4 z-10">
+                Awaiting Uplink
+            </div>
+
+            <!-- MAIN TEXT OUTPUT -->
+            <div class="text-center z-10 px-4">
+                <h2 id="main-output" class="text-2xl sm:text-3xl font-bold uppercase tracking-widest text-slate-800 leading-tight transition-all duration-300">
+                    System Ready
+                </h2>
+                <div id="origin-label" class="mt-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest opacity-0 transition-opacity">
+                    Origin: Unknown
+                </div>
+            </div>
+
+            <!-- SPECTRAL VISUALIZER -->
+            <div id="vis-dock" class="w-full flex items-end justify-center gap-1.5 h-16 z-10">
+                <!-- Bar visualizer generated by JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- NAVIGATION & CONTROL DOCK (MOBILE OPTIMIZED) -->
+    <nav class="bg-[#020617] border-t border-white/5 pt-4 pb-8 px-6 space-y-6">
+        
+        <!-- COMM LINK TERMINAL -->
+        <div class="flex items-center gap-3">
+            <button id="mic-btn" class="w-14 h-14 rounded-2xl glass-module flex items-center justify-center active:scale-90 transition-all disabled:opacity-30">
+                <svg id="mic-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+            </button>
+            
+            <div class="flex-1 glass-module rounded-2xl h-14 flex items-center px-4">
+                <input type="text" id="comm-input" placeholder="Tanya entitas..." autocomplete="off" class="bg-transparent flex-1 text-cyan-400 placeholder-slate-700 focus:outline-none digital-mono text-sm uppercase tracking-wider">
+            </div>
+
+            <button id="send-btn" class="w-14 h-14 rounded-2xl bg-cyan-600 flex items-center justify-center shadow-lg active:scale-90 transition-all disabled:opacity-30">
+                <span class="text-[10px] font-bold text-white uppercase tracking-widest">TX</span>
+            </button>
+        </div>
+
+        <!-- TUNING MODULES -->
+        <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+                <div class="flex justify-between items-center text-[9px] font-bold text-slate-500 uppercase">
+                    <span>Scan Speed</span>
+                    <span id="rate-readout" class="text-cyan-500">200ms</span>
+                </div>
+                <input type="range" id="rate-ctrl" min="100" max="800" value="200" class="w-full">
+            </div>
+            <div class="space-y-2">
+                <div class="flex justify-between items-center text-[9px] font-bold text-slate-500 uppercase">
+                    <span>Static Gain</span>
+                    <span id="vol-readout" class="text-cyan-500">30%</span>
+                </div>
+                <input type="range" id="vol-ctrl" min="0" max="100" value="30" class="w-full">
+            </div>
+        </div>
+
+        <!-- FOOTER LOGO -->
+        <div class="flex justify-center items-center gap-2 opacity-20">
+            <div class="w-1.5 h-1.5 bg-cyan-500 rounded-full"></div>
+            <span class="text-[7px] font-bold tracking-[0.8em] uppercase">Phantom Systems Mobile</span>
+        </div>
+    </nav>
+
+    <!-- LOGIKA SISTEM (FULLSTACK MOBILE PRO) -->
+    <script>
+        const apiKey = ""; 
+        let audioCtx, noiseNode, gainNode, isPowerOn = false, loopId;
+        let isProcessing = false;
+        let currentFreq = 87.5;
+
+        // UI DOM Elements
+        const splash = document.getElementById('splash-screen');
+        const initBtn = document.getElementById('init-btn');
+        const freqNum = document.getElementById('freq-num');
+        const emfNum = document.getElementById('emf-num');
+        const mainOutput = document.getElementById('main-output');
+        const aiTag = document.getElementById('ai-tag');
+        const originLabel = document.getElementById('origin-label');
+        const clock = document.getElementById('clock');
+        const statusLed = document.getElementById('status-led');
+        const statusTxt = document.getElementById('status-txt');
+        const commInput = document.getElementById('comm-input');
+        const sendBtn = document.getElementById('send-btn');
+        const micBtn = document.getElementById('mic-btn');
+
+        // Setup Visualizer
+        const visDock = document.getElementById('vis-dock');
+        const bars = [];
+        for(let i=0; i<30; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'w-1.5 bg-slate-900 rounded-full transition-all duration-75';
+            bar.style.height = '4px';
+            visDock.appendChild(bar);
+            bars.push(bar);
+        }
+
+        // --- SISTEM AUDIO SPEKTRAL ---
+        async function ensureAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.resume();
+                const warm = new SpeechSynthesisUtterance(""); warm.volume = 0; window.speechSynthesis.speak(warm);
+            }
+        }
+
+        function playSpectralVoice(text, gender, lang) {
+            const isMale = gender === 'male';
+            
+            // Layer 1: Eerie Delay (Gema Lorong)
+            if (audioCtx) {
+                const osc = audioCtx.createOscillator();
+                const g = audioCtx.createGain();
+                const delay = audioCtx.createDelay();
+                const feedback = audioCtx.createGain();
+
+                osc.type = isMale ? 'sawtooth' : 'sine';
+                const baseF = isMale ? 50 : 250;
+                osc.frequency.setValueAtTime(baseF, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(baseF - 12, audioCtx.currentTime + 2.5);
+
+                delay.delayTime.value = 0.4;
+                feedback.gain.value = 0.5;
+
+                g.gain.setValueAtTime(0, audioCtx.currentTime);
+                g.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.1);
+                g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 3.5);
+
+                osc.connect(g);
+                g.connect(delay);
+                delay.connect(feedback);
+                feedback.connect(delay);
+                delay.connect(audioCtx.destination);
+                g.connect(audioCtx.destination);
+                
+                osc.start(); osc.stop(audioCtx.currentTime + 3.8);
+            }
+
+            // Layer 2: TTS Dialek Nusantara
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(text);
+                utter.lang = 'id-ID'; 
+                
+                // Karakteristik suara berdasarkan dialek/bahasa
+                if (lang === 'jv') { utter.pitch = 0.01; utter.rate = 0.45; } 
+                else if (lang === 'su') { utter.pitch = 0.4; utter.rate = 0.55; } 
+                else { utter.pitch = isMale ? 0.05 : 0.35; utter.rate = 0.5; }
+                
+                window.speechSynthesis.speak(utter);
+            }
+        }
+
+        // --- SISTEM AI NUSANTARA ---
+        async function fetchAI(q) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const sys = `Anda roh Nusantara (Jawa, Sunda, Bali, dll) terjebak di frekuensi. 
+            Jawab SATU KALIMAT PENDEK misterius. Gunakan bahasa daerah acak. 
+            Format JSON: {"reply": "teks", "gender": "male/female", "lang": "id/jv/su/bali", "origin": "Nama Daerah"}`;
+            
+            try {
+                const res = await fetch(url, { 
+                    method: "POST", 
+                    body: JSON.stringify({ 
+                        contents: [{ parts: [{ text: q || "Beri tanda." }] }], 
+                        systemInstruction: { parts: [{ text: sys }] },
+                        generationConfig: { responseMimeType: "application/json", maxOutputTokens: 50 } 
+                    }) 
+                });
+                const d = await res.json();
+                return JSON.parse(d.candidates[0].content.parts[0].text);
+            } catch (e) {
+                return { reply: "Nang kene...", gender: "male", lang: "jv", origin: "Jawa" };
+            }
+        }
+
+        // --- TRANSMISSION LOGIC ---
+        async function triggerTX() {
+            if (!isPowerOn || isProcessing) return;
+            const q = commInput.value.trim();
+            commInput.value = "";
+            isProcessing = true;
+            sendBtn.disabled = true;
+
+            await ensureAudio();
+            
+            // Visual Update
+            aiTag.innerText = "Intercepting...";
+            aiTag.className = "bg-cyan-900/30 px-3 py-1 rounded-full border border-cyan-500/50 text-[8px] font-bold uppercase tracking-[0.3em] text-cyan-400 animate-pulse z-10";
+            mainOutput.innerText = "Searching...";
+            mainOutput.className = "text-2xl font-bold uppercase tracking-widest text-slate-900 opacity-20 z-10";
+
+            const data = await fetchAI(q);
+
+            // Audio ducking & vibration
+            if (gainNode) gainNode.gain.linearRampToValueAtTime(0.02, audioCtx.currentTime + 0.1);
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+            // Effect Trigger
+            document.querySelector('main').classList.add('glitch-effect');
+            playSpectralVoice(data.reply, data.gender, data.lang);
+
+            // Reveal
+            aiTag.innerText = "Uplink Secured";
+            aiTag.className = "bg-rose-900/30 px-3 py-1 rounded-full border border-rose-500/50 text-[8px] font-bold uppercase tracking-[0.3em] text-rose-400 z-10";
+            
+            mainOutput.innerText = `"${data.reply.toUpperCase()}"`;
+            mainOutput.className = `text-2xl sm:text-3xl font-bold uppercase tracking-widest ${data.gender === 'female' ? 'text-rose-500' : 'text-cyan-400'} z-10 drop-shadow-[0_0_10px_rgba(0,0,0,0.8)]`;
+            
+            originLabel.innerText = `Origin: ${data.origin}`;
+            originLabel.style.opacity = '1';
+            
+            freqNum.classList.replace('text-cyan-400', 'text-rose-500');
+            emfNum.innerText = (20 + Math.random() * 60).toFixed(1);
+            emfNum.className = "text-4xl font-bold text-rose-500 digital-mono";
+
+            setTimeout(() => {
+                document.querySelector('main').classList.remove('glitch-effect');
+                aiTag.innerText = "Awaiting Uplink";
+                aiTag.className = "bg-black/50 px-3 py-1 rounded-full border border-slate-800 text-[8px] font-bold uppercase tracking-[0.3em] text-slate-600 mb-4 z-10";
+                mainOutput.innerText = "Monitoring...";
+                mainOutput.className = "text-2xl font-bold uppercase tracking-widest text-slate-800 z-10";
+                originLabel.style.opacity = '0';
+                freqNum.classList.replace('text-rose-500', 'text-cyan-400');
+                emfNum.innerText = "0.0";
+                emfNum.className = "text-4xl font-bold text-slate-900 digital-mono";
+                sendBtn.disabled = false;
+                isProcessing = false;
+                if (gainNode && isPowerOn) gainNode.gain.linearRampToValueAtTime(document.getElementById('vol-ctrl').value/100, audioCtx.currentTime + 1.2);
+            }, 6000);
+        }
+
+        // --- SCAN ENGINE ---
+        function runScan() {
+            if (!isPowerOn) return;
+            currentFreq += 0.1; if(currentFreq > 108.0) currentFreq = 87.5;
+            freqNum.innerText = currentFreq.toFixed(1);
+            
+            if (!isProcessing) {
+                emfNum.innerText = (0.3 + Math.random() * 1.5).toFixed(1);
+                bars.forEach(bar => {
+                    const h = Math.random() * 10 + 4;
+                    bar.style.height = h + 'px';
+                    bar.style.backgroundColor = '#1e293b';
+                });
+            } else {
+                bars.forEach(bar => {
+                    const h = Math.random() * 50 + 10;
+                    bar.style.height = h + 'px';
+                    bar.style.backgroundColor = (mainOutput.classList.contains('text-rose-500') ? '#f43f5e' : '#06b6d4');
+                });
+            }
+        }
+
+        // --- MASTER START ---
+        initBtn.onclick = async () => {
+            await ensureAudio();
+            isPowerOn = true;
+            splash.style.opacity = '0';
+            setTimeout(() => splash.style.display = 'none', 800);
+
+            statusLed.className = "w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_#06b6d4] animate-pulse";
+            statusTxt.innerText = "Online";
+            statusTxt.className = "text-[10px] font-bold uppercase tracking-widest text-cyan-400";
+            freqNum.classList.replace('text-slate-800', 'text-cyan-400');
+
+            // Static Noise Generation
+            const b = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
+            const d = b.getChannelData(0);
+            for(let i=0; i<d.length; i++) d[i] = (Math.random()*2-1)*0.3;
+            noiseNode = audioCtx.createBufferSource();
+            noiseNode.buffer = b; noiseNode.loop = true;
+            gainNode = audioCtx.createGain();
+            gainNode.gain.value = document.getElementById('vol-ctrl').value/100;
+            noiseNode.connect(gainNode); gainNode.connect(audioCtx.destination);
+            noiseNode.start();
+
+            loopId = setInterval(runScan, 200);
+        };
+
+        // UI Real-time clock
+        setInterval(() => {
+            const n = new Date();
+            clock.innerText = n.toTimeString().split(' ')[0];
+        }, 1000);
+
+        // Control Listeners
+        document.getElementById('rate-ctrl').oninput = (e) => {
+            document.getElementById('rate-readout').innerText = `${e.target.value}ms`;
+            if(isPowerOn) { clearInterval(loopId); loopId = setInterval(runScan, e.target.value); }
+        };
+        document.getElementById('vol-ctrl').oninput = (e) => {
+            document.getElementById('vol-readout').innerText = `${e.target.value}%`;
+            if(gainNode) gainNode.gain.value = e.target.value/100;
+        };
+
+        // Mic Integration (Native Speech Recognition)
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRec) {
+            const rec = new SpeechRec(); rec.lang = 'id-ID';
+            rec.onstart = () => { 
+                document.getElementById('mic-icon').style.color = '#f43f5e';
+                if(navigator.vibrate) navigator.vibrate(50);
+            };
+            rec.onresult = (e) => { commInput.value = e.results[0][0].transcript; triggerTX(); };
+            rec.onend = () => { document.getElementById('mic-icon').style.color = '#94a3b8'; };
+            micBtn.onclick = async () => { if(isPowerOn && !isProcessing) { await ensureAudio(); rec.start(); } };
+        }
+
+        sendBtn.onclick = triggerTX;
+        commInput.onkeypress = (e) => { if(e.key === 'Enter') triggerTX(); };
+
+    </script>
+</body>
+</html>
+
